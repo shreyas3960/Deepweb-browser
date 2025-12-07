@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   }, [checkAuth]); // Run when checkAuth changes (which should be stable)
 
   const login = () => {
-    const redirectUrl = window.location.origin + '/dashboard';
+    const redirectUrl = window.location.origin + '/auth/callback';
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
