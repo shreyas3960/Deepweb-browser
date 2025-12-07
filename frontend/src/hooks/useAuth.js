@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const setSession = (user, token) => {
+  const setSession = useCallback((user, token) => {
     if (token) {
       localStorage.setItem('session_token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
     }
     setLoading(false); // Ensure loading is false after setting session
-  };
+  }, []);
 
   // Re-export checkAuth so it can be called manually if needed
   return (

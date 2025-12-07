@@ -38,7 +38,7 @@ export default function AuthCallback() {
         
         if (!user || !session_token) {
           console.error('AuthCallback: Invalid response from backend', response.data);
-          throw new Error('Invalid session response');
+          throw new Error('Missing user or session_token in response');
         }
 
         console.log('AuthCallback: Session created successfully for user:', user.email);
