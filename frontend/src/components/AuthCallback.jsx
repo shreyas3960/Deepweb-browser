@@ -15,12 +15,16 @@ export default function AuthCallback() {
       const params = new URLSearchParams(hash.substring(1));
       const sessionId = params.get('session_id');
 
+      console.log('AuthCallback: Processing auth with session_id:', sessionId ? 'present' : 'missing');
+
       if (!sessionId) {
+        console.warn('AuthCallback: No session_id in URL hash, redirecting to home');
         navigate('/', { replace: true });
         return;
       }
 
       try {
+        console.log('AuthCallback: Calling backend to create session');
         const response = await axios.post(
           `${API}/auth/session`,
           {},
@@ -32,6 +36,13 @@ export default function AuthCallback() {
 
         const { user, session_token } = response.data;
         
+        if (!user || !session_token) {
+          console.error('AuthCallback: Invalid response from backend', response.data);
+          throw new Error('Invalid session response');
+        }
+
+        console.log('AuthCallback: Session created successfully for user:', user.email);
+        
         // Set session storage flag BEFORE calling setSession to ensure ProtectedRoute sees it
         sessionStorage.setItem('just_authenticated', 'true');
         
@@ -41,16 +52,17 @@ export default function AuthCallback() {
         // Clear the hash from URL before navigating
         window.history.replaceState(null, '', window.location.pathname);
         
+        console.log('AuthCallback: Navigating to dashboard');
         // Navigate with user in state for immediate access
         navigate('/dashboard', { replace: true, state: { user } });
       } catch (error) {
-        console.error('Auth error:', error);
+        console.error('AuthCallback: Authentication failed:', error.response?.data || error.message);
         navigate('/', { replace: true });
       }
     };
 
     processAuth();
-  }, []);
+  }, [navigate, setSession]);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
