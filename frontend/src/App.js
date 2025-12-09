@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import LandingPage from './components/LandingPage';
 import AuthCallback from './components/AuthCallback';
@@ -7,16 +7,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function AppRouter() {
-  const location = useLocation();
-
-  // Handle auth callback synchronously during render
-  if (location.hash?.includes('session_id=')) {
-    return <AuthCallback />;
-  }
-
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route
         path="/dashboard"
         element={

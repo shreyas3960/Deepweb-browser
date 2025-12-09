@@ -21,11 +21,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('session_token');
       if (!token) {
+        console.log('checkAuth: No token found in localStorage');
         setUser(null);
         setLoading(false);
         return;
       }
       
+      console.log('checkAuth: Token found, verifying with backend');
       // Ensure header is set
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -34,17 +36,20 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (response.data) {
+        console.log('checkAuth: User authenticated:', response.data.email);
         setUser(response.data);
       } else {
+        console.warn('checkAuth: No user data in response');
         setUser(null);
         localStorage.removeItem('session_token');
         delete axios.defaults.headers.common['Authorization'];
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.error('checkAuth: Authentication check failed:', error.response?.status, error.message);
       setUser(null);
       // Clear token if it was invalid (401) or any other error
       if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log('checkAuth: Clearing invalid token');
         localStorage.removeItem('session_token');
         delete axios.defaults.headers.common['Authorization'];
       }
@@ -59,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   }, [checkAuth]); // Run when checkAuth changes (which should be stable)
 
   const login = () => {
-    const redirectUrl = window.location.origin + '/dashboard';
+    const redirectUrl = window.location.origin + '/auth/callback';
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
@@ -76,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const setSession = (user, token) => {
+  const setSession = useCallback((user, token) => {
     if (token) {
       localStorage.setItem('session_token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -85,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
     }
     setLoading(false); // Ensure loading is false after setting session
-  };
+  }, []);
 
   // Re-export checkAuth so it can be called manually if needed
   return (
